@@ -4,6 +4,7 @@ use std::error::Error;
 use std::os::unix::fs::PermissionsExt;
 use std::process::{Command, Stdio};
 use std::time::Duration;
+pub use thirtyfour;
 use thirtyfour::{prelude::ElementWaitable, By};
 use thirtyfour::{DesiredCapabilities, WebDriver};
 
