@@ -7,6 +7,7 @@ use std::time::Duration;
 pub use thirtyfour;
 use thirtyfour::{prelude::ElementWaitable, By};
 use thirtyfour::{DesiredCapabilities, WebDriver};
+pub const USER_AGENT: &'static str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36";
 
 /// Fetches a new ChromeDriver executable and patches it to prevent detection.
 /// Returns a WebDriver instance.
@@ -121,7 +122,8 @@ pub async fn chrome() -> Result<WebDriver, Box<dyn std::error::Error>> {
     caps.add_chrome_arg("--disable-blink-features=AutomationControlled")
         .unwrap();
     caps.add_chrome_arg("window-size=1920,1080").unwrap();
-    caps.add_chrome_arg("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36").unwrap();
+    let user_agent = format!("user-agent={USER_AGENT}");
+    caps.add_chrome_arg(&user_agent).unwrap();
     caps.add_chrome_arg("disable-infobars").unwrap();
     caps.add_chrome_option("excludeSwitches", ["enable-automation"])
         .unwrap();
