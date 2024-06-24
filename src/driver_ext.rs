@@ -6,6 +6,10 @@ use crate::chrome;
 
 #[async_trait::async_trait]
 pub trait Chrome: Sized {
+    /// Initializes chromedriver.
+    ///
+    /// Panics if initialization failed!
+    /// For non-panicking version use [`chrome`] function.
     async fn new() -> (Self, Child);
     async fn borrow(&self) -> &WebDriver;
     async fn goto(&self, url: &str) -> Result<(), Box<dyn Error>>;
@@ -14,7 +18,7 @@ pub trait Chrome: Sized {
 #[async_trait::async_trait]
 impl Chrome for WebDriver {
     async fn new() -> (WebDriver, Child) {
-        chrome().await.unwrap()
+        chrome().await.expect("Failed to initialize chromedriver.")
     }
 
     async fn goto(&self, url: &str) -> Result<(), Box<dyn Error>> {

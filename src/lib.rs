@@ -3,7 +3,7 @@ use get_capabilities::get_capabilities;
 use patch_chromedriver::patch_chromedriver;
 use rand::Rng;
 use spawn_chromedriver::spawn_chromedriver;
-use std::process::Child;
+use std::{error::Error, fmt::Display, process::Child};
 pub use thirtyfour;
 use thirtyfour::WebDriver;
 mod driver_ext;
@@ -26,7 +26,7 @@ pub async fn chrome() -> Result<(WebDriver, Child), Box<dyn std::error::Error>> 
         tracing::info!("ChromeDriver already exists!");
     } else {
         tracing::info!("ChromeDriver does not exist! Fetching...");
-        fetch_chromedriver().await.unwrap();
+        fetch_chromedriver().await?;
     }
     let chromedriver_executable = match os {
         "linux" => "chromedriver_PATCHED",
@@ -37,11 +37,11 @@ pub async fn chrome() -> Result<(WebDriver, Child), Box<dyn std::error::Error>> 
     if std::path::Path::new(chromedriver_executable).exists() {
         tracing::info!("Detected patched chromedriver executable!");
     } else {
-        patch_chromedriver(chromedriver_executable);
+        patch_chromedriver(chromedriver_executable)?;
     }
     tracing::info!("Starting chromedriver...");
     let port: u16 = rand::thread_rng().gen_range(2000..5000);
-    let chrome_driver_handle = spawn_chromedriver(chromedriver_executable, port);
+    let chrome_driver_handle = spawn_chromedriver(chromedriver_executable, port)?;
     let caps = get_capabilities();
     let mut driver = None;
     let mut attempt = 0u8;
@@ -52,6 +52,16 @@ pub async fn chrome() -> Result<(WebDriver, Child), Box<dyn std::error::Error>> 
             Err(_) => tokio::time::sleep(std::time::Duration::from_millis(250)).await,
         }
     }
-    let driver = driver.unwrap();
+    let driver = driver.ok_or(DriverCreationFailed)?;
     Ok((driver, chrome_driver_handle))
 }
+
+#[derive(Debug)]
+struct DriverCreationFailed;
+
+impl Display for DriverCreationFailed {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Driver creation failed.")
+    }
+}
+impl Error for DriverCreationFailed {}

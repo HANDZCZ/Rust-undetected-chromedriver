@@ -1,13 +1,15 @@
+use std::error::Error;
+
 use rand::Rng;
 
-pub fn patch_chromedriver(chromedriver_executable: &str) {
+pub fn patch_chromedriver(chromedriver_executable: &str) -> Result<(), Box<dyn Error>> {
     tracing::info!("Starting ChromeDriver executable patch...");
     let file_name = if cfg!(windows) {
         "chromedriver.exe"
     } else {
         "chromedriver"
     };
-    let f = std::fs::read(file_name).unwrap();
+    let f = std::fs::read(file_name)?;
     let mut new_chromedriver_bytes = f.clone();
     let mut total_cdc = String::from("");
     let mut cdc_pos_list = Vec::new();
@@ -52,11 +54,12 @@ pub fn patch_chromedriver(chromedriver_executable: &str) {
     tracing::info!("Patched {} cdcs!", patch_ct);
 
     tracing::info!("Starting to write to binary file...");
-    let _file = std::fs::File::create(chromedriver_executable).unwrap();
+    let _file = std::fs::File::create(chromedriver_executable)?;
     match std::fs::write(chromedriver_executable, new_chromedriver_bytes) {
         Ok(_res) => {
             tracing::info!("Successfully wrote patched executable to 'chromedriver_PATCHED'!",)
         }
         Err(err) => tracing::error!("Error when writing patch to file! Error: {}", err),
     };
+    Ok(())
 }

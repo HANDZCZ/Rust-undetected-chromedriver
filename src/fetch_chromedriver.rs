@@ -1,3 +1,5 @@
+use std::{error::Error, fmt::Display};
+
 use crate::get_chrome_version::get_chrome_version;
 
 pub async fn fetch_chromedriver() -> Result<(), Box<dyn std::error::Error>> {
@@ -14,7 +16,7 @@ pub async fn fetch_chromedriver() -> Result<(), Box<dyn std::error::Error>> {
         let json = serde_json::from_slice::<serde_json::Value>(&body)?;
         let version = json["milestones"][installed_version]["version"]
             .as_str()
-            .unwrap();
+            .ok_or(ChromeDriverFetchError)?;
 
         // Fetch the chromedriver binary
         chromedriver_url = match os {
@@ -78,3 +80,14 @@ pub async fn fetch_chromedriver() -> Result<(), Box<dyn std::error::Error>> {
     }
     Ok(())
 }
+
+#[derive(Debug)]
+struct ChromeDriverFetchError;
+
+impl Display for ChromeDriverFetchError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "No chromedriver version was found.")
+    }
+}
+
+impl Error for ChromeDriverFetchError {}
