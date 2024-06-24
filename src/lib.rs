@@ -26,8 +26,7 @@ pub async fn chrome() -> Result<(WebDriver, Child), Box<dyn std::error::Error>> 
         tracing::info!("ChromeDriver already exists!");
     } else {
         tracing::info!("ChromeDriver does not exist! Fetching...");
-        let client = reqwest::Client::new();
-        fetch_chromedriver(&client).await.unwrap();
+        fetch_chromedriver().await.unwrap();
     }
     let chromedriver_executable = match os {
         "linux" => "chromedriver_PATCHED",

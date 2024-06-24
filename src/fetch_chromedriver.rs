@@ -1,9 +1,8 @@
 use crate::get_chrome_version::get_chrome_version;
 
-pub async fn fetch_chromedriver(
-    client: &reqwest::Client,
-) -> Result<(), Box<dyn std::error::Error>> {
+pub async fn fetch_chromedriver() -> Result<(), Box<dyn std::error::Error>> {
     let os = std::env::consts::OS;
+    let client = reqwest::Client::new();
 
     let installed_version = get_chrome_version(os).await?;
     let chromedriver_url: String;
