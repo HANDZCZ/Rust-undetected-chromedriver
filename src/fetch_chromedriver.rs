@@ -64,13 +64,16 @@ pub async fn fetch_chromedriver() -> Result<(), Box<dyn std::error::Error>> {
     let mut archive = zip::ZipArchive::new(std::io::Cursor::new(body))?;
     for i in 0..archive.len() {
         let mut file = archive.by_index(i)?;
-        let outpath = file.mangled_name();
-        if file.name().ends_with('/') {
-            std::fs::create_dir_all(&outpath)?;
-        } else {
-            let outpath_relative = outpath.file_name().unwrap();
-            let mut outfile = std::fs::File::create(outpath_relative)?;
-            std::io::copy(&mut file, &mut outfile)?;
+        let file_name = file.mangled_name();
+        if let Some(file_name) = file_name.file_name() {
+            let file_name = file_name.to_string_lossy();
+            if file.name().ends_with("/")
+                || file_name != "chromedriver" && file_name != "chromedriver.exe"
+            {
+                continue;
+            }
+            let mut out_file = std::fs::File::create(file_name.as_ref())?;
+            std::io::copy(&mut file, &mut out_file)?;
         }
     }
     Ok(())
