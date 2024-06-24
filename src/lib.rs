@@ -2,7 +2,7 @@ use rand::Rng;
 use std::error::Error;
 #[cfg(any(target_os = "linux", target_os = "macos"))]
 use std::os::unix::fs::PermissionsExt;
-use std::process::{Command, Stdio};
+use std::process::{Child, Command, Stdio};
 use std::time::Duration;
 pub use thirtyfour;
 use thirtyfour::{prelude::ElementWaitable, By};
@@ -11,7 +11,7 @@ pub const USER_AGENT: &'static str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) 
 
 /// Fetches a new ChromeDriver executable and patches it to prevent detection.
 /// Returns a WebDriver instance.
-pub async fn chrome() -> Result<WebDriver, Box<dyn std::error::Error>> {
+pub async fn chrome() -> Result<(WebDriver, Child), Box<dyn std::error::Error>> {
     let os = std::env::consts::OS;
     if std::path::Path::new("chromedriver").exists()
         || std::path::Path::new("chromedriver.exe").exists()
@@ -131,13 +131,13 @@ pub async fn chrome() -> Result<WebDriver, Box<dyn std::error::Error>> {
     let mut attempt = 0;
     while driver.is_none() && attempt < 20 {
         attempt += 1;
-        match WebDriver::new(&format!("http://localhost:{}", port), caps.clone()).await {
+        match WebDriver::new(&format!("http://127.0.0.1:{}", port), caps.clone()).await {
             Ok(d) => driver = Some(d),
             Err(_) => tokio::time::sleep(std::time::Duration::from_millis(250)).await,
         }
     }
     let driver = driver.unwrap();
-    Ok(driver)
+    Ok((driver, chrome_driver_handle))
 }
 
 async fn fetch_chromedriver(client: &reqwest::Client) -> Result<(), Box<dyn std::error::Error>> {
@@ -243,8 +243,8 @@ async fn get_chrome_version(os: &str) -> Result<String, Box<dyn std::error::Erro
 }
 
 #[async_trait::async_trait]
-pub trait Chrome {
-    async fn new() -> Self;
+pub trait Chrome: Sized {
+    async fn new() -> (Self, Child);
     async fn bypass_cloudflare(&self, url: &str) -> Result<(), Box<dyn Error>>;
     async fn borrow(&self) -> &WebDriver;
     async fn goto(&self, url: &str) -> Result<(), Box<dyn Error>>;
@@ -252,7 +252,7 @@ pub trait Chrome {
 
 #[async_trait::async_trait]
 impl Chrome for WebDriver {
-    async fn new() -> WebDriver {
+    async fn new() -> (WebDriver, Child) {
         chrome().await.unwrap()
     }
 
