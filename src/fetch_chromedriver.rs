@@ -2,7 +2,7 @@ use std::{error::Error, fmt::Display};
 
 use crate::get_chrome_version::get_chrome_version;
 
-pub async fn fetch_chromedriver() -> Result<(), Box<dyn std::error::Error>> {
+pub async fn fetch_chromedriver() -> Result<(), Box<dyn Error + Send + Sync>> {
     let os = std::env::consts::OS;
     let client = reqwest::Client::new();
 

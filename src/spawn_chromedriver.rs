@@ -8,7 +8,7 @@ use std::{
 pub fn spawn_chromedriver(
     chromedriver_executable: &str,
     port: u16,
-) -> Result<Child, Box<dyn Error>> {
+) -> Result<Child, Box<dyn Error + Send + Sync>> {
     #[cfg(any(target_os = "linux", target_os = "macos"))]
     {
         let mut perms = std::fs::metadata(chromedriver_executable)?.permissions();

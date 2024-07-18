@@ -18,7 +18,7 @@ pub const USER_AGENT: &'static str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) 
 
 /// Fetches a new ChromeDriver executable and patches it to prevent detection.
 /// Returns a WebDriver instance.
-pub async fn chrome() -> Result<(WebDriver, Child), Box<dyn std::error::Error>> {
+pub async fn chrome() -> Result<(WebDriver, Child), Box<dyn std::error::Error + Send + Sync>> {
     let os = std::env::consts::OS;
     if std::path::Path::new("chromedriver").exists()
         || std::path::Path::new("chromedriver.exe").exists()

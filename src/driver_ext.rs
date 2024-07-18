@@ -12,7 +12,7 @@ pub trait Chrome: Sized {
     /// For non-panicking version use [`chrome`] function.
     async fn new() -> (Self, Child);
     async fn borrow(&self) -> &WebDriver;
-    async fn goto(&self, url: &str) -> Result<(), Box<dyn Error>>;
+    async fn goto(&self, url: &str) -> Result<(), Box<dyn Error + Send + Sync>>;
 }
 
 #[async_trait::async_trait]
@@ -21,7 +21,7 @@ impl Chrome for WebDriver {
         chrome().await.expect("Failed to initialize chromedriver.")
     }
 
-    async fn goto(&self, url: &str) -> Result<(), Box<dyn Error>> {
+    async fn goto(&self, url: &str) -> Result<(), Box<dyn Error + Send + Sync>> {
         let driver = self.borrow().await;
         driver
             .execute(&format!(r#"window.open("{}", "_blank");"#, url), vec![])

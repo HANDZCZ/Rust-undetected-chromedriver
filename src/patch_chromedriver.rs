@@ -2,7 +2,7 @@ use std::error::Error;
 
 use rand::Rng;
 
-pub fn patch_chromedriver(chromedriver_executable: &str) -> Result<(), Box<dyn Error>> {
+pub fn patch_chromedriver(chromedriver_executable: &str) -> Result<(), Box<dyn Error + Send + Sync>> {
     tracing::info!("Starting ChromeDriver executable patch...");
     let file_name = if cfg!(windows) {
         "chromedriver.exe"
