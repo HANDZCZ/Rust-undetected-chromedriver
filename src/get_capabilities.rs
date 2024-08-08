@@ -11,6 +11,7 @@ pub fn get_capabilities() -> ChromeCapabilities {
     let user_agent = format!("user-agent={USER_AGENT}");
     caps.add_chrome_arg(&user_agent).unwrap();
     caps.add_chrome_arg("disable-infobars").unwrap();
+    caps.add_chrome_arg("--disable-search-engine-choice-screen").unwrap();
     caps.add_chrome_option("excludeSwitches", ["enable-automation"])
         .unwrap();
     caps
