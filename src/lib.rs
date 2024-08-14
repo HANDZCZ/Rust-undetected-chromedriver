@@ -1,14 +1,14 @@
+use capabilities::DefaultCapabilitiesBuilder;
 use fetch_chromedriver::fetch_chromedriver;
-use get_capabilities::get_capabilities;
 use patch_chromedriver::patch_chromedriver;
 use rand::Rng;
 use spawn_chromedriver::spawn_chromedriver;
 use std::{error::Error, fmt::Display, process::Child};
 pub use thirtyfour;
 use thirtyfour::WebDriver;
+mod capabilities;
 mod driver_ext;
 mod fetch_chromedriver;
-mod get_capabilities;
 mod get_chrome_version;
 mod patch_chromedriver;
 mod spawn_chromedriver;
@@ -42,7 +42,7 @@ pub async fn chrome() -> Result<(WebDriver, Child), Box<dyn std::error::Error + 
     tracing::info!("Starting chromedriver...");
     let port: u16 = rand::thread_rng().gen_range(2000..5000);
     let chrome_driver_handle = spawn_chromedriver(chromedriver_executable, port)?;
-    let caps = get_capabilities();
+    let caps = DefaultCapabilitiesBuilder::new().into_chrome_caps();
     let mut driver = None;
     let mut attempt = 0u8;
     while driver.is_none() && attempt < 20 {
