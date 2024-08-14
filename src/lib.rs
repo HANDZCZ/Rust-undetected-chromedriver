@@ -32,7 +32,7 @@ pub async fn chrome() -> Result<(WebDriver, Child), Box<dyn std::error::Error + 
         "linux" => "chromedriver_PATCHED",
         "macos" => "chromedriver_PATCHED",
         "windows" => "chromedriver_PATCHED.exe",
-        _ => panic!("Unsupported OS!"),
+        _ => return Err(UnsupportedOS.into()),
     };
     if std::path::Path::new(chromedriver_executable).exists() {
         tracing::info!("Detected patched chromedriver executable!");
@@ -65,3 +65,13 @@ impl Display for DriverCreationFailed {
     }
 }
 impl Error for DriverCreationFailed {}
+
+#[derive(Debug)]
+struct UnsupportedOS;
+
+impl Display for UnsupportedOS {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Your OS is not supported.")
+    }
+}
+impl Error for UnsupportedOS {}
