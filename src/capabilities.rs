@@ -1,4 +1,3 @@
-use crate::USER_AGENT;
 use thirtyfour::{ChromeCapabilities, ChromiumLikeCapabilities, DesiredCapabilities};
 
 /// Default capabilities that are used.
@@ -18,7 +17,7 @@ pub struct DefaultCapabilitiesBuilder<'a> {
     no_sandbox: bool,
     disable_dev_shm_usage: bool,
     window_size: (u32, u32),
-    user_agent: &'a str,
+    user_agent: Option<&'a str>,
     hide_chrome_is_being_controlled: bool,
     disable_search_engine_choice_screen: bool,
     window_position: Option<(i32, i32)>,
@@ -46,8 +45,10 @@ impl<'a> DefaultCapabilitiesBuilder<'a> {
         ))
         .unwrap();
 
-        let user_agent = format!("user-agent={}", self.user_agent);
-        caps.add_arg(&user_agent).unwrap();
+        if let Some(user_agent) = self.user_agent {
+            let user_agent = format!("user-agent={}", user_agent);
+            caps.add_arg(&user_agent).unwrap();
+        }
 
         if self.hide_chrome_is_being_controlled {
             caps.add_arg("disable-infobars").unwrap();
@@ -83,7 +84,7 @@ impl<'a> DefaultCapabilitiesBuilder<'a> {
     /// no_sandbox: true,
     /// disable_dev_shm_usage: true,
     /// window_size: (1920, 1080),
-    /// user_agent: USER_AGENT, // this is a constant accessible from root of the crate
+    /// user_agent: None,
     /// hide_chrome_is_being_controlled: true,
     /// disable_search_engine_choice_screen: true,
     /// window_position: None
@@ -109,7 +110,7 @@ impl<'a> DefaultCapabilitiesBuilder<'a> {
     }
 
     pub fn set_user_agent(mut self, user_agent: &'a str) -> Self {
-        self.user_agent = user_agent;
+        self.user_agent = Some(user_agent);
         self
     }
 
@@ -134,6 +135,7 @@ impl<'a> DefaultCapabilitiesBuilder<'a> {
         self
     }
 
+    /// Don't forget to set user-agent when using this option!
     pub fn set_headless(mut self, headless: bool) -> Self {
         self.headless = headless;
         self
@@ -146,7 +148,7 @@ impl<'a> Default for DefaultCapabilitiesBuilder<'a> {
             no_sandbox: true,
             disable_dev_shm_usage: true,
             window_size: (1920, 1080),
-            user_agent: USER_AGENT,
+            user_agent: None,
             hide_chrome_is_being_controlled: true,
             disable_search_engine_choice_screen: true,
             window_position: None,

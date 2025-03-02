@@ -14,8 +14,6 @@ mod patch_chromedriver;
 mod spawn_chromedriver;
 pub use driver_ext::Chrome;
 
-pub const USER_AGENT: &'static str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36";
-
 /// Fetches a new ChromeDriver executable and patches it to prevent detection.
 /// Returns a WebDriver instance (with default capabilities) and handle to chromedriver process.
 pub async fn chrome() -> Result<(WebDriver, Child), Box<dyn std::error::Error + Send + Sync>> {
