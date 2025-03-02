@@ -1,5 +1,5 @@
 use crate::USER_AGENT;
-use thirtyfour::{ChromeCapabilities, DesiredCapabilities};
+use thirtyfour::{ChromeCapabilities, ChromiumLikeCapabilities, DesiredCapabilities};
 
 /// Default capabilities that are used.
 ///
@@ -37,36 +37,35 @@ impl<'a> DefaultCapabilitiesBuilder<'a> {
             caps.set_disable_dev_shm_usage().unwrap();
         }
 
-        caps.add_chrome_arg("--disable-blink-features=AutomationControlled")
+        caps.add_arg("--disable-blink-features=AutomationControlled")
             .unwrap();
 
-        caps.add_chrome_arg(&format!(
+        caps.add_arg(&format!(
             "window-size={},{}",
             self.window_size.0, self.window_size.1
         ))
         .unwrap();
 
         let user_agent = format!("user-agent={}", self.user_agent);
-        caps.add_chrome_arg(&user_agent).unwrap();
+        caps.add_arg(&user_agent).unwrap();
 
         if self.hide_chrome_is_being_controlled {
-            caps.add_chrome_arg("disable-infobars").unwrap();
-            caps.add_chrome_option("excludeSwitches", ["enable-automation"])
-                .unwrap();
+            caps.add_arg("disable-infobars").unwrap();
+            caps.add_exclude_switch("enable-automation").unwrap();
         }
 
         if self.disable_search_engine_choice_screen {
-            caps.add_chrome_arg("--disable-search-engine-choice-screen")
+            caps.add_arg("--disable-search-engine-choice-screen")
                 .unwrap();
         }
 
         if let Some((x, y)) = self.window_position {
-            caps.add_chrome_arg(&format!("--window-position={},{}", x, y))
+            caps.add_arg(&format!("--window-position={},{}", x, y))
                 .unwrap();
         }
 
         if self.headless {
-            caps.add_chrome_arg("--headless=new").unwrap();
+            caps.add_arg("--headless=new").unwrap();
         }
         caps
     }
