@@ -48,7 +48,7 @@ pub async fn chrome_with_capabilities(
         patch_chromedriver(chromedriver_executable)?;
     }
     tracing::info!("Starting chromedriver...");
-    let port: u16 = rand::thread_rng().gen_range(2000..5000);
+    let port: u16 = rand::rng().random_range(2000..5000);
     let chrome_driver_handle = spawn_chromedriver(chromedriver_executable, port)?;
     let mut driver = None;
     let mut attempt = 0u8;

@@ -42,7 +42,7 @@ pub fn patch_chromedriver(chromedriver_executable: &str) -> Result<(), Box<dyn E
     let get_random_char = || -> char {
         "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
             .chars()
-            .collect::<Vec<char>>()[rand::thread_rng().gen_range(0..48)]
+            .collect::<Vec<char>>()[rand::rng().random_range(0..48)]
     };
 
     for i in cdc_pos_list {
