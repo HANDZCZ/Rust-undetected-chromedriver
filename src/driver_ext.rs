@@ -16,7 +16,6 @@ pub trait Chrome: Sized {
     /// Panics if initialization failed!
     /// For non-panicking version use [`chrome_with_capabilities`] function.
     async fn new_with_capabilities(capabilities: ChromeCapabilities) -> (WebDriver, Child);
-    async fn borrow(&self) -> &WebDriver;
     async fn goto(&self, url: &str) -> Result<(), Box<dyn Error + Send + Sync>>;
 }
 
@@ -33,33 +32,28 @@ impl Chrome for WebDriver {
     }
 
     async fn goto(&self, url: &str) -> Result<(), Box<dyn Error + Send + Sync>> {
-        let driver = self.borrow().await;
-        driver
-            .execute(&format!(r#"window.open("{}", "_blank");"#, url), vec![])
+        self.execute(&format!(r#"window.open("{}", "_blank");"#, url), vec![])
             .await?;
 
         tokio::time::sleep(Duration::from_secs(3)).await;
 
-        let first_window = driver
+        let first_window = self
             .windows()
             .await?
             .first()
             .expect("Unable to get first windows")
             .clone();
+        self.switch_to_window(first_window).await?;
+        self.close_window().await?;
 
-        driver.switch_to_window(first_window).await?;
-        driver.close_window().await?;
-        let first_window = driver
+        let last_window = self
             .windows()
             .await?
             .last()
             .expect("Unable to get last windows")
             .clone();
-        driver.switch_to_window(first_window).await?;
-        Ok(())
-    }
+        self.switch_to_window(last_window).await?;
 
-    async fn borrow(&self) -> &WebDriver {
-        self
+        Ok(())
     }
 }
