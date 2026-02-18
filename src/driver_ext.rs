@@ -1,6 +1,6 @@
 use std::{error::Error, process::Child, time::Duration};
 
-use thirtyfour::{ChromeCapabilities, WebDriver};
+use thirtyfour::{Capabilities, WebDriver};
 
 use crate::{chrome, chrome_with_capabilities};
 
@@ -15,7 +15,7 @@ pub trait Chrome: Sized {
     ///
     /// Panics if initialization failed!
     /// For non-panicking version use [`chrome_with_capabilities`] function.
-    async fn new_with_capabilities(capabilities: ChromeCapabilities) -> (WebDriver, Child);
+    async fn new_with_capabilities(capabilities: Capabilities) -> (WebDriver, Child);
     async fn goto(&self, url: &str) -> Result<(), Box<dyn Error + Send + Sync>>;
 }
 
@@ -25,7 +25,7 @@ impl Chrome for WebDriver {
         chrome().await.expect("Failed to initialize chromedriver.")
     }
 
-    async fn new_with_capabilities(capabilities: ChromeCapabilities) -> (WebDriver, Child) {
+    async fn new_with_capabilities(capabilities: Capabilities) -> (WebDriver, Child) {
         chrome_with_capabilities(capabilities)
             .await
             .expect("Failed to initialize chromedriver.")

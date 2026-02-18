@@ -17,14 +17,14 @@ pub use driver_ext::Chrome;
 /// Fetches a new ChromeDriver executable and patches it to prevent detection.
 /// Returns a WebDriver instance (with default capabilities) and handle to chromedriver process.
 pub async fn chrome() -> Result<(WebDriver, Child), Box<dyn std::error::Error + Send + Sync>> {
-    chrome_with_capabilities(DefaultCapabilitiesBuilder::new().into_chrome_caps()).await
+    chrome_with_capabilities(DefaultCapabilitiesBuilder::new().into_chrome_caps().into()).await
 }
 
 /// Fetches a new ChromeDriver executable and patches it to prevent detection.
 /// Returns a WebDriver instance and handle to chromedriver process.
 /// If chromedriver fails to start 3 times new chromedriver is redownloaded.
 pub async fn chrome_with_capabilities(
-    capabilities: thirtyfour::ChromeCapabilities,
+    capabilities: thirtyfour::Capabilities,
 ) -> Result<(WebDriver, Child), Box<dyn std::error::Error + Send + Sync>> {
     let res = try_start_chrome(capabilities.clone(), 3).await;
     if res.is_ok() {
@@ -46,7 +46,7 @@ pub async fn chrome_with_capabilities(
 /// Fetches a new ChromeDriver executable and patches it to prevent detection.
 /// Returns a WebDriver instance and handle to chromedriver process.
 pub async fn try_start_chrome(
-    capabilities: thirtyfour::ChromeCapabilities,
+    capabilities: thirtyfour::Capabilities,
     num_attempts: u8,
 ) -> Result<(WebDriver, Child), Box<dyn std::error::Error + Send + Sync>> {
     if std::path::Path::new("chromedriver").exists()
@@ -83,7 +83,8 @@ pub async fn try_start_chrome(
     Ok((driver, chrome_driver_handle))
 }
 
-fn get_patched_chrome_driver_executable() -> Result<&'static str, Box<dyn std::error::Error + Send + Sync>> {
+fn get_patched_chrome_driver_executable(
+) -> Result<&'static str, Box<dyn std::error::Error + Send + Sync>> {
     let os = std::env::consts::OS;
     let chromedriver_executable = match os {
         "linux" => "chromedriver_PATCHED",
