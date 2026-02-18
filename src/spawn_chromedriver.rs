@@ -12,8 +12,13 @@ pub fn spawn_chromedriver(
     #[cfg(any(target_os = "linux", target_os = "macos"))]
     {
         let mut perms = std::fs::metadata(chromedriver_executable)?.permissions();
-        perms.set_mode(0o755);
-        std::fs::set_permissions(chromedriver_executable, perms)?;
+        let perms_oct = perms.mode();
+        if perms_oct & 0o500 != 0o500 || perms_oct & 0o050 != 0o050 || perms_oct & 0o005 != 0o005 {
+            perms.set_mode(0o755);
+            if let Err(e) = std::fs::set_permissions(chromedriver_executable, perms) {
+                tracing::error!("Can't set permission for \"{chromedriver_executable}\", got error: {e:?}");
+            }
+        }
     }
     let mut chrome_driver_handle = Command::new(format!("./{}", chromedriver_executable))
         .stdout(Stdio::piped())
