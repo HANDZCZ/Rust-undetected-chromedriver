@@ -1,4 +1,4 @@
-use thirtyfour::{ChromeCapabilities, ChromiumLikeCapabilities, DesiredCapabilities};
+use thirtyfour::{ChromeCapabilities, ChromiumCapabilities, ChromiumLikeCapabilities, DesiredCapabilities};
 
 /// Default capabilities that are used.
 ///
@@ -25,9 +25,23 @@ pub struct DefaultCapabilitiesBuilder<'a> {
 }
 
 impl<'a> DefaultCapabilitiesBuilder<'a> {
-    /// Constructs [`ChromeCapabilities`] from builder.
     pub fn into_chrome_caps(self) -> ChromeCapabilities {
-        let mut caps = DesiredCapabilities::chrome();
+        let mut caps = ChromeCapabilities::new();
+        self.add_caps(&mut caps);
+        caps
+    }
+
+    pub fn into_chromium_caps(self) -> ChromiumCapabilities {
+        let mut caps = ChromiumCapabilities::new();
+        self.add_caps(&mut caps);
+        caps
+    }
+
+    /// Adds capabilities to some type implementing [`ChromiumLikeCapabilities`].
+    pub fn add_caps<T>(&self, caps: &mut T)
+    where
+        T: ChromiumLikeCapabilities,
+    {
         if self.no_sandbox {
             caps.set_no_sandbox().unwrap();
         }
@@ -68,7 +82,6 @@ impl<'a> DefaultCapabilitiesBuilder<'a> {
         if self.headless {
             caps.add_arg("--headless=new").unwrap();
         }
-        caps
     }
 
     /// Sets the window position offscreen.
