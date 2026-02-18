@@ -26,7 +26,7 @@ pub async fn chrome() -> Result<(WebDriver, Child), Box<dyn std::error::Error + 
 pub async fn chrome_with_capabilities(
     capabilities: thirtyfour::Capabilities,
 ) -> Result<(WebDriver, Child), Box<dyn std::error::Error + Send + Sync>> {
-    let res = try_start_chrome(capabilities.clone(), 3).await;
+    let res = try_start_chrome(capabilities.clone(), 3, false).await;
     if res.is_ok() {
         return res;
     }
@@ -40,7 +40,7 @@ pub async fn chrome_with_capabilities(
     let _ = std::fs::remove_file(chromedriver_executable);
     let chromedriver_executable = get_patched_chrome_driver_executable()?;
     let _ = std::fs::remove_file(chromedriver_executable);
-    try_start_chrome(capabilities, 3).await
+    try_start_chrome(capabilities, 3, false).await
 }
 
 /// Fetches a new ChromeDriver executable and patches it to prevent detection.
@@ -48,20 +48,23 @@ pub async fn chrome_with_capabilities(
 pub async fn try_start_chrome(
     capabilities: thirtyfour::Capabilities,
     num_attempts: u8,
+    skip_chromedriver_check: bool,
 ) -> Result<(WebDriver, Child), Box<dyn std::error::Error + Send + Sync>> {
-    if std::path::Path::new("chromedriver").exists()
-        || std::path::Path::new("chromedriver.exe").exists()
-    {
-        tracing::info!("ChromeDriver already exists!");
-    } else {
-        tracing::info!("ChromeDriver does not exist! Fetching...");
-        fetch_chromedriver().await?;
-    }
     let chromedriver_executable = get_patched_chrome_driver_executable()?;
-    if std::path::Path::new(chromedriver_executable).exists() {
-        tracing::info!("Detected patched chromedriver executable!");
-    } else {
-        patch_chromedriver(chromedriver_executable)?;
+    if !skip_chromedriver_check {
+        if std::path::Path::new("chromedriver").exists()
+            || std::path::Path::new("chromedriver.exe").exists()
+        {
+            tracing::info!("ChromeDriver already exists!");
+        } else {
+            tracing::info!("ChromeDriver does not exist! Fetching...");
+            fetch_chromedriver().await?;
+        }
+        if std::path::Path::new(chromedriver_executable).exists() {
+            tracing::info!("Detected patched chromedriver executable!");
+        } else {
+            patch_chromedriver(chromedriver_executable)?;
+        }
     }
     tracing::info!("Starting chromedriver...");
     let port: u16 = rand::rng().random_range(2000..5000);
@@ -72,7 +75,10 @@ pub async fn try_start_chrome(
         attempt += 1;
         match WebDriver::new(&format!("http://127.0.0.1:{}", port), capabilities.clone()).await {
             Ok(d) => driver = Some(d),
-            Err(_) => tokio::time::sleep(std::time::Duration::from_millis(250)).await,
+            Err(e) => {
+                tracing::error!("Got error when initializing chrome: {e:#?}");
+                tokio::time::sleep(std::time::Duration::from_millis(250)).await
+            }
         }
     }
     let driver = driver.ok_or_else(|| {
