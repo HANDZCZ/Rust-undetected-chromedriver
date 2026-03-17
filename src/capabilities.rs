@@ -1,4 +1,4 @@
-use thirtyfour::{ChromeCapabilities, ChromiumCapabilities, ChromiumLikeCapabilities, DesiredCapabilities};
+use thirtyfour::{ChromeCapabilities, ChromiumCapabilities, ChromiumLikeCapabilities};
 
 /// Default capabilities that are used.
 ///

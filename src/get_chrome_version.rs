@@ -3,7 +3,7 @@ use std::process::Command;
 pub async fn get_chrome_version(os: &str) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
     tracing::info!("Getting installed Chrome version...");
     let command = match os {
-        "linux" => Command::new("/usr/bin/google-chrome")
+        "linux" => Command::new("google-chrome")
             .arg("--version")
             .output()?,
         "macos" => Command::new("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")
